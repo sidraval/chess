@@ -11,46 +11,53 @@ end
 class ChessPiece
   attr_accessor :directions, :moves, :player, :position, :symbol
 
-  def initialize(player,board,position)
-    @player = player
+  def initialize(color,board,position)
+    @player = color
     @board = board
     @moves = []
     @position = position
     set_symbol
     set_directions
-    make_moves
+    valid_moves
   end
 
   # Worries about opponent's newly available moves
-  def make_current_moves
-    make_moves
-    our_color = self.player
-    opponents_color = self.player == "white" ? "black" : "white"
+  def valid_moves
+    unchecked_valid_moves
+
 
     @moves.select do |move|
       old_piece = temporary_board(move)
-      opponents_pieces = gather_pieces(opponents_color)
-      opponents_pieces.each do |piece|
-        piece.make_move
-        piece.moves.each do |position|
-          y,x = position
-          if board[y][x].class == King && board[y][x].player == our_color
-            @moves.delete(move)
-          end
-        end
-      end
+
+
+      @moves.delete(move) if placed_in_check?(move)
+
+      # opponents_pieces.each do |piece|
+      #   piece.unchecked_valid_moves
+      #   piece.moves.each do |position|
+      #     y,x = position
+      #     if board[y][x].class == King && board[y][x].player == our_color
+      #       @moves.delete(move)
+      #     end
+      #   end
+      # end
+
       revert_board(move,old_piece)
     end
   end
 
   def placed_in_check?(move)
+    our_color = self.player
+    opponents_color = self.player == "white" ? "black" : "white"
+    opponents_pieces = gather_pieces(opponents_color)
+
     opponenets_pieces.any? do |piece|
-      piece.make_move
-      placed_in_check?(piece)
+      piece.unchecked_valid_moves
+      is_checked?(piece)
     end
   end
 
-  def placed_in_check?(piece)
+  def is_checked?(piece)
     piece.moves.each do |position|
       y,x = position
       return true if board[y][x].class == King && board[y][x].player == our_color
@@ -104,7 +111,7 @@ end
 class SlidingPiece < ChessPiece
 
   # Makes moves without worrying about opponents new valid moves
-  def make_moves
+  def unchecked_valid_moves
     directions.each do |direction|
       new_position = @position
       bad_direction = false
@@ -128,7 +135,7 @@ end
 
 class SteppingPiece < ChessPiece
 
-  def make_moves
+  def unchecked_valid_moves
     directions.each do |direction|
       new_position = @position
       new_position = new_position.zip(direction).map { |p| p.inject(:+) }
@@ -272,6 +279,37 @@ class Board
 
 end
 
+class Chess
+  def initialize
+    @board = Board.new
+    @player1 = Human.new("white",@board)
+    @player2 = Human.new("black",@board)
+  end
+end
 
+class Human
+  def initialize(color,board)
+    set_pieces(board)
+    @color = color
+  end
+
+  def set_pieces(board)
+    y = @color == "white" ? 7 : 0
+
+    @king = King.new(@color,board,[y,4])
+    @queen = Queen.new(@color,board,[y,3])
+    @bishop1 = Bishop.new(@color,board,[y,2])
+    @bishop2 = Bishop.new(@color,board,[y,5])
+    @knight1 = Knight.new(@color,board,[y,1])
+    @knight2 = Knight.new(@color,board,[y,6])
+    @rook1 = Rook.new(@color,board,[y,0])
+    @rook2 = Rook.new(@color,board,[y,7])
+
+    (y == 7) ? (y -= 1) : (y += 1)
+    8.times do |index|
+      instance_variable_set("@pawn#{index+1}",Pawn.new(@color,board,[y,index]))
+    end
+  end
+end
 
 
