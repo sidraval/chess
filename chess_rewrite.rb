@@ -1,10 +1,11 @@
+require 'debugger'
 module SharedDirections
   def straight_directions
-    directions += [[0,1],[1,0],[-1,0],[0,-1]]
+    @directions += [[0,1],[1,0],[-1,0],[0,-1]]
   end
 
   def diagonal_directions
-    directions += [[-1,1],[1,1],[1,-1],[-1,-1]]
+    @directions += [[-1,1],[1,1],[1,-1],[-1,-1]]
   end
 end
 
@@ -16,21 +17,31 @@ class ChessPiece
     @board = board
     @moves = []
     @position = position
+    @directions = []
     set_symbol
     set_directions
-    valid_moves
+    add_to_board
+    # debugger
+    # valid_moves
+
+  end
+
+  def add_to_board
+    y,x = @position
+    @board.grid[y][x] = self
   end
 
   # Worries about opponent's newly available moves
   def valid_moves
     unchecked_valid_moves
 
+    moves_to_delete = []
 
-    @moves.select do |move|
+    @moves.each do |move|
       old_piece = temporary_board(move)
 
-
-      @moves.delete(move) if placed_in_check?(move)
+      moves_to_delete << move if placed_in_check?(move)
+      # @moves.delete(move) if placed_in_check?(move)
 
       # opponents_pieces.each do |piece|
       #   piece.unchecked_valid_moves
@@ -44,47 +55,50 @@ class ChessPiece
 
       revert_board(move,old_piece)
     end
+    @moves = @moves - moves_to_delete
   end
 
   def placed_in_check?(move)
-    our_color = self.player
+
     opponents_color = self.player == "white" ? "black" : "white"
     opponents_pieces = gather_pieces(opponents_color)
 
-    opponenets_pieces.any? do |piece|
+    opponents_pieces.any? do |piece|
       piece.unchecked_valid_moves
       is_checked?(piece)
     end
   end
 
   def is_checked?(piece)
+    our_color = self.player
     piece.moves.each do |position|
       y,x = position
-      return true if board[y][x].class == King && board[y][x].player == our_color
+      return true if @board.grid[y][x].class == King && @board.grid[y][x].player == our_color
     end
     false
   end
 
   def temporary_board(move)
     y,x = move
-    old_piece = @board[y][x]
-    @board[y][x] = self
+    old_piece = @board.grid[y][x]
+    @board.grid[y][x] = self
+
     y,x = self.position
-    @board[y][x] = nil
+    @board.grid[y][x] = nil
 
     return old_piece
   end
 
   def revert_board(move,old_piece)
     y,x = move
-    @board[y][x] =
+    @board.grid[y][x] = old_piece
     y,x = self.position
-    @board[y][x] = old_piece
+    @board.grid[y][x] = self
   end
 
   def gather_pieces(color)
     pieces = []
-    board.each do |row|
+    @board.grid.each do |row|
       row.each do |square|
         next if square.nil?
         pieces << square if square.player == color
@@ -93,7 +107,7 @@ class ChessPiece
     pieces
   end
 
-  def  validity(position)
+  def validity(position)
     y,x = position
     return "Next direction" if !((0..7).include?(x) && (0..7).include?(y))
 
@@ -112,7 +126,8 @@ class SlidingPiece < ChessPiece
 
   # Makes moves without worrying about opponents new valid moves
   def unchecked_valid_moves
-    directions.each do |direction|
+    @moves = []
+    @directions.each do |direction|
       new_position = @position
       bad_direction = false
       until bad_direction
@@ -136,7 +151,8 @@ end
 class SteppingPiece < ChessPiece
 
   def unchecked_valid_moves
-    directions.each do |direction|
+    @moves = []
+    @directions.each do |direction|
       new_position = @position
       new_position = new_position.zip(direction).map { |p| p.inject(:+) }
       @moves << new_position if validity(new_position) != "Next direction"
@@ -146,7 +162,7 @@ class SteppingPiece < ChessPiece
 end
 
 class King < SteppingPiece
-  include ShareDirections
+  include SharedDirections
 
   def set_directions
     straight_directions
@@ -203,6 +219,8 @@ class Knight < SteppingPiece
 end
 
 class Bishop < SlidingPiece
+  include SharedDirections
+
   def set_directions
     diagonal_directions
   end
@@ -214,11 +232,14 @@ class Bishop < SlidingPiece
 end
 
 class Pawn < ChessPiece
+  def unchecked_valid_moves
+  end
+
   def set_directions
     if @player == "white"
-      directions += [[-1,0],[-1,-1],[-1,1],[-2,0]]
+      @directions += [[-1,0],[-1,-1],[-1,1],[-2,0]]
     else
-      directions += [[1,0],[1,1],[1,-1],[2,0]]
+      @directions += [[1,0],[1,1],[1,-1],[2,0]]
     end
   end
 
@@ -248,6 +269,7 @@ class Board
     start,finish = player_move
     y,x = start
     piece = @grid[y][x]
+    # Change piece's position
     @grid[y][x] = nil
     y,x = finish
     @grid[y][x] = piece
@@ -266,20 +288,11 @@ class Board
     end
   end
 
-  def populate(white,black)
-    white.each do |piece|
-      y,x = piece.position
-      @grid[y][x] = piece
-    end
-    black.each do |piece|
-      y,x = piece.position
-      @grid[y][x] = piece
-    end
-  end
-
 end
 
 class Chess
+  attr_accessor :board, :player1, :player2
+
   def initialize
     @board = Board.new
     @player1 = Human.new("white",@board)
@@ -288,12 +301,16 @@ class Chess
 end
 
 class Human
+  attr_accessor :king, :queen, :bishop1, :bishop2, :knight1, :knight2, :color,
+  :rook1, :rook2, :pawn1, :pawn2, :pawn3, :pawn4, :pawn5, :pawn6, :pawn7, :pawn8
+
   def initialize(color,board)
-    set_pieces(board)
     @color = color
+    set_pieces(board)
   end
 
   def set_pieces(board)
+    # debugger
     y = @color == "white" ? 7 : 0
 
     @king = King.new(@color,board,[y,4])
