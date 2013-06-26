@@ -323,6 +323,9 @@ class HumanPlayer
       @pawn1, @pawn2, @pawn3, @pawn4, @pawn5, @pawn6, @pawn7, @pawn8]
   end
 
+  def all_valid_moves
+  end
+
   def make_pieces(y)
     @king = King.new([y,4])
     @queen = Queen.new([y,3])
