@@ -1,5 +1,20 @@
 require 'colored'
 
+# pieces have to know the board and who they belong to
+# they will move one direction at a time, in single distance
+# increments. and check whether each iteration of a move
+# is to an empty spot or a enemy spot. if not it stops in that
+# direction. and iterates in the next direction
+# each piece does this at every turn,
+# and the piece will know it's list of valid moves
+#
+# checkmate = no valid moves
+# valid moves are also moves that
+# check the opponents moves after a given move
+# if the opponents move leaves the king in check
+# it is not a valid move
+
+
 module SharedDirections
   def straight_directions
     (-7..7).each do |n|
@@ -42,6 +57,9 @@ class ChessPiece
       x = coord[1]
       (0..7).include?(x) && (0..7).include?(y)
     end
+  end
+
+  def king_in_check?
   end
 
 end
@@ -334,7 +352,7 @@ class HumanPlayer
     eight_to_one = 8.downto(1).to_a.map(&:to_s)
     row_conversion = Hash[eight_to_one.zip((0..7).to_a)]
     split_string = chess_string.split(//)
-    [row_conversion[split_string.last],column_conversion[split_string.first]]
+    [row_conversion[split_string.last],column_conversion[split_string.first]a]
   end
 
 end

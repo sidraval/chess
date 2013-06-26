@@ -27,38 +27,40 @@ class ChessPiece
   end
 
   def add_to_board
-    y,x = @position
-    @board.grid[y][x] = self
+    set_piece(@position,self)
+    # y,x = @position
+    # @board.grid[y][x] = self
+  end
+
+  def get_piece(position)
+    y,x = position
+    @board.grid[y][x]
+  end
+
+  def set_piece(position,piece)
+    y,x = position
+    @board.grid[y][x] = piece
+  end
+
+  def add_arrays(first,second)
+    first.zip(second).map { |p| p.inject(:+) }
   end
 
   # Worries about opponent's newly available moves
   def valid_moves
     unchecked_valid_moves
-
     moves_to_delete = []
 
     @moves.each do |move|
       old_piece = temporary_board(move)
-
-      moves_to_delete << move if placed_in_check?(move)
-      # @moves.delete(move) if placed_in_check?(move)
-
-      # opponents_pieces.each do |piece|
-      #   piece.unchecked_valid_moves
-      #   piece.moves.each do |position|
-      #     y,x = position
-      #     if board[y][x].class == King && board[y][x].player == our_color
-      #       @moves.delete(move)
-      #     end
-      #   end
-      # end
-
+      moves_to_delete << move if placed_in_check?
       revert_board(move,old_piece)
     end
+
     @moves = @moves - moves_to_delete
   end
 
-  def placed_in_check?(move)
+  def placed_in_check?
 
     opponents_color = self.player == "white" ? "black" : "white"
     opponents_pieces = gather_pieces(opponents_color)
@@ -79,21 +81,27 @@ class ChessPiece
   end
 
   def temporary_board(move)
-    y,x = move
-    old_piece = @board.grid[y][x]
-    @board.grid[y][x] = self
+    # y,x = move
+    # old_piece = @board.grid[y][x]
+    old_piece = get_piece(move)
+    set_piece(move,self)
+    # @board.grid[y][x] = self
 
-    y,x = self.position
-    @board.grid[y][x] = nil
+    set_piece(self.position,nil)
+
+    # y,x = self.position
+    # @board.grid[y][x] = nil
 
     return old_piece
   end
 
   def revert_board(move,old_piece)
-    y,x = move
-    @board.grid[y][x] = old_piece
-    y,x = self.position
-    @board.grid[y][x] = self
+    set_piece(move,old_piece)
+    # y,x = move
+    # @board.grid[y][x] = old_piece
+    set_piece(self.position,self)
+    # y,x = self.position
+    # @board.grid[y][x] = self
   end
 
   def gather_pieces(color)
@@ -132,7 +140,8 @@ class SlidingPiece < ChessPiece
       bad_direction = false
       until bad_direction
         # Sums corresponding elements of two arrays
-        new_position = new_position.zip(direction).map { |p| p.inject(:+) }
+        new_position = add_arrays(new_position,direction)
+        # new_position = new_position.zip(direction).map { |p| p.inject(:+) }
         case validity(new_position)
         when "Next direction"
           bad_direction = true
@@ -154,7 +163,8 @@ class SteppingPiece < ChessPiece
     @moves = []
     @directions.each do |direction|
       new_position = @position
-      new_position = new_position.zip(direction).map { |p| p.inject(:+) }
+      new_position = add_arrays(new_position,direction)
+      # new_position = new_position.zip(direction).map { |p| p.inject(:+) }
       @moves << new_position if validity(new_position) != "Next direction"
     end
   end
@@ -232,7 +242,38 @@ class Bishop < SlidingPiece
 end
 
 class Pawn < ChessPiece
+  attr_accessor :has_moved
   def unchecked_valid_moves
+    @moves = []
+    # It shouldn't move 2 unless it hasn't moved
+    # It should only move diagonally if an opponent's piece is there
+    add_forward_once
+    add_diagonals
+    add_forward_twice unless @has_moved
+  end
+
+  def add_forward_twice
+    forward_once = add_arrays(@position,@directions[0])
+    new_position = add_arrays(@position,@directions[3])
+    @moves << new_position if get_piece(new_position).nil? && @moves.include?(forward_once)
+  end
+
+  def add_diagonals
+    @directions[1...3].each do |direction|
+      new_position = @position
+      new_position = add_arrays(new_position,direction)
+      @moves << new_position if validity(new_position) == "Opponents piece"
+    end
+  end
+
+  def add_forward_once
+    new_position = add_arrays(@position,@directions[0])
+    @moves << new_position if validity(new_position) == "Empty spot"
+  end
+
+  def initialize(color,board,position)
+    super(color,board,position)
+    @has_moved = false
   end
 
   def set_directions
@@ -269,9 +310,9 @@ class Board
     start,finish = player_move
     y,x = start
     piece = @grid[y][x]
-    # Change piece's position
     @grid[y][x] = nil
     y,x = finish
+    piece.position = finish
     @grid[y][x] = piece
   end
 
