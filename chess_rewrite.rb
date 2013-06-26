@@ -290,8 +290,28 @@ class Board
     start,finish = player_move
     piece = pick_piece_up(start)
     put_piece_down(piece,finish)
-    piece.has_moved = true if piece.class == Pawn
+    if piece.class == Pawn
+      piece.has_moved = true
+      promote_pawn(piece) if piece.position[0] == 7 || piece.position[0] == 0
+    end
     display
+  end
+
+  def promote_pawn(pawn)
+    y,x = pawn.position
+    print "What piece would you like to promote to? Q K B R: "
+    new_piece = gets.chomp
+    case new_piece
+    when "Q"
+      @grid[y][x] = Queen.new(pawn.color,self,pawn.position)
+    when "K"
+      @grid[y][x] = Knight.new(pawn.color,self,pawn.position)
+    when "B"
+      @grid[y][x] = Bishop.new(pawn.color,self,pawn.position)
+    when "R"
+      @grid[y][x] = Rook.new(pawn.color,self,pawn.position)
+    end
+    kill_piece(pawn)
   end
 
   def put_piece_down(piece,position)
@@ -353,7 +373,7 @@ class Chess
     type_of_end_game
   end
 
-  def type_of_endgame
+  def type_of_end_game
     if (@player1.king.placed_in_check? || @player2.king.placed_in_check?) &&
       (@player1.in_mate? || @player2.in_mate?)
       puts "Checkmate!"
@@ -399,7 +419,8 @@ end
 
 class Human
   attr_accessor :king, :queen, :bishop1, :bishop2, :knight1, :knight2, :color,
-  :rook1, :rook2, :pawn1, :pawn2, :pawn3, :pawn4, :pawn5, :pawn6, :pawn7, :pawn8
+  :rook1, :rook2, :pawn1, :pawn2, :pawn3, :pawn4, :pawn5, :pawn6, :pawn7, :pawn8,
+  :pieces
 
   def initialize(color,board)
     @color = color
@@ -425,14 +446,10 @@ class Human
     end
   end
 
-  def pieces
-    [@king,@queen,@bishop1,@bishop2,@knight1,@knight2,@rook1,@rook2,
-      @pawn1, @pawn2, @pawn3, @pawn4, @pawn5, @pawn6, @pawn7, @pawn8]
-  end
-
   def in_mate?
+    my_pieces = @king.gather_pieces(@color)
     valid_moves = []
-    pieces.each do |piece|
+    my_pieces.each do |piece|
       valid_moves += piece.valid_moves
     end
     valid_moves.empty?
