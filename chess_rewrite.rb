@@ -40,24 +40,6 @@ class ChessPiece
     @board.grid[y][x] = piece
   end
 
-  def add_arrays(first,second)
-    first.zip(second).map { |p| p.inject(:+) }
-  end
-
-  # Worries about opponent's newly available moves
-  def valid_moves
-    unchecked_valid_moves
-    moves_to_delete = []
-
-    @moves.each do |move|
-      old_piece = temporary_board(move)
-      moves_to_delete << move if placed_in_check?
-      revert_board(move,old_piece)
-    end
-
-    @moves = @moves - moves_to_delete
-  end
-
   def placed_in_check?
     opponents_color = self.color == "white" ? "black" : "white"
     opponents_pieces = gather_pieces(opponents_color)
@@ -98,6 +80,24 @@ class ChessPiece
       end
     end
     pieces
+  end
+
+  # Worries about opponent's newly available moves
+  def valid_moves
+    unchecked_valid_moves
+    moves_to_delete = []
+
+    @moves.each do |move|
+      old_piece = temporary_board(move)
+      moves_to_delete << move if placed_in_check?
+      revert_board(move,old_piece)
+    end
+
+    @moves = @moves - moves_to_delete
+  end
+
+  def add_arrays(first,second)
+    first.zip(second).map { |p| p.inject(:+) }
   end
 
   def validity(position)
@@ -200,7 +200,7 @@ class Knight < SteppingPiece
     [-2, -1, 1, 2].each do |n|
       [-2, -1, 1, 2].each do |m|
         next if n.abs == m.abs
-        directions << [n,m]
+        @directions << [n,m]
       end
     end
   end
