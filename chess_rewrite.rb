@@ -1,4 +1,6 @@
+# Organize code by method (i.e. group together methods that call one another whenever possible)
 require 'debugger'
+
 module SharedDirections
   def straight_directions
     @directions += [[0,1],[1,0],[-1,0],[0,-1]]
@@ -10,6 +12,7 @@ module SharedDirections
 end
 
 class ChessPiece
+  # Figure out what actually needs to be accessible
   attr_accessor :directions, :moves, :player, :position, :symbol
 
   def initialize(color,board,position)
@@ -21,6 +24,8 @@ class ChessPiece
     set_symbol
     set_directions
     add_to_board
+    
+    # Where should valid_moves be called?
     # debugger
     # valid_moves
 
@@ -34,32 +39,19 @@ class ChessPiece
   # Worries about opponent's newly available moves
   def valid_moves
     unchecked_valid_moves
-
     moves_to_delete = []
 
     @moves.each do |move|
       old_piece = temporary_board(move)
-
+      # placed_in_check? tells you if your move resulted in you being placed in check.
       moves_to_delete << move if placed_in_check?(move)
-      # @moves.delete(move) if placed_in_check?(move)
-
-      # opponents_pieces.each do |piece|
-      #   piece.unchecked_valid_moves
-      #   piece.moves.each do |position|
-      #     y,x = position
-      #     if board[y][x].class == King && board[y][x].player == our_color
-      #       @moves.delete(move)
-      #     end
-      #   end
-      # end
-
       revert_board(move,old_piece)
     end
+    
     @moves = @moves - moves_to_delete
   end
 
   def placed_in_check?(move)
-
     opponents_color = self.player == "white" ? "black" : "white"
     opponents_pieces = gather_pieces(opponents_color)
 
@@ -69,6 +61,8 @@ class ChessPiece
     end
   end
 
+  # Deserves a rename
+  # Maybe the player attribute does too.
   def is_checked?(piece)
     our_color = self.player
     piece.moves.each do |position|
@@ -125,6 +119,7 @@ end
 class SlidingPiece < ChessPiece
 
   # Makes moves without worrying about opponents new valid moves
+  # Needs to be more than one method?
   def unchecked_valid_moves
     @moves = []
     @directions.each do |direction|
@@ -274,7 +269,8 @@ class Board
     y,x = finish
     @grid[y][x] = piece
   end
-
+  
+  # Color coding
   def display
     @grid.each do |row|
       row.each do |square|
