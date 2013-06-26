@@ -1,5 +1,6 @@
 require 'debugger'
 require 'colored'
+
 module SharedDirections
   def straight_directions
     @directions += [[0,1],[1,0],[-1,0],[0,-1]]
@@ -11,7 +12,7 @@ module SharedDirections
 end
 
 class ChessPiece
-  attr_accessor :directions, :moves, :color, :position, :symbol
+  attr_accessor :moves, :color, :position, :symbol
 
   def initialize(color,board,position)
     @color = color
@@ -79,13 +80,13 @@ class ChessPiece
   def temporary_board(move)
     old_piece = get_piece(move)
     set_piece(move,self)
-    set_piece(self.position,nil)
+    set_piece(@position,nil)
     old_piece
   end
 
   def revert_board(move,old_piece)
     set_piece(move,old_piece)
-    set_piece(self.position,self)
+    set_piece(@position,self)
   end
 
   def gather_pieces(color)
@@ -168,6 +169,7 @@ end
 
 class Queen < SlidingPiece
   include SharedDirections
+
   def set_directions
     straight_directions
     diagonal_directions
@@ -353,7 +355,6 @@ class Board
 end
 
 class Chess
-  attr_accessor :board, :player1, :player2
 
   def initialize
     @board = Board.new
@@ -418,9 +419,7 @@ class Chess
 end
 
 class Human
-  attr_accessor :king, :queen, :bishop1, :bishop2, :knight1, :knight2, :color,
-  :rook1, :rook2, :pawn1, :pawn2, :pawn3, :pawn4, :pawn5, :pawn6, :pawn7, :pawn8,
-  :pieces
+  attr_accessor :king, :color
 
   def initialize(color,board)
     @color = color
