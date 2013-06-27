@@ -38,7 +38,7 @@ class ChessPiece
 
     moves.each do |move|
       old_piece = @board.temporary_change(move,self)
-      moves_to_delete << move if @board.placed_in_check?(self.color)
+      moves_to_delete << move if @board.is_in_check?(self.color)
       @board.revert_change(move,old_piece,self)
     end
 

@@ -21,14 +21,14 @@ class Chess
       turn(@player2)
     end
 
-    type_of_end_game
+    end_game
   end
 
-  def type_of_end_game
-    p1_check = @board.placed_in_check?(@player2.color)
-    p2_check = @board.placed_in_check?(@player1.color)
-    p1_mate = @board.in_mate?(@player2.color)
-    p2_mate = @board.in_mate?(@player1.color)
+  def end_game
+    p1_check = @board.is_in_check?(@player1.color)
+    p2_check = @board.is_in_check?(@player2.color)
+    p1_mate = @board.in_mate?(@player1.color)
+    p2_mate = @board.in_mate?(@player2.color)
     if (p1_check || p2_check) && (p1_mate || p2_mate)
       puts "Checkmate!"
     elsif !(p1_check && p2_check) && (p1_mate || p2_mate)
@@ -37,7 +37,7 @@ class Chess
   end
 
   def turn(player)
-    puts "Check!" if @board.placed_in_check?(player.color)
+    puts "Check!" if @board.is_in_check?(player.color)
     player_move = move(player)
     @board.change_board(player_move)
   end

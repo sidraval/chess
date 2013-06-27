@@ -23,17 +23,17 @@ class Board
     end
   end
 
-  def placed_in_check?(color)
+  def is_in_check?(color)
     opponents_color = color == "white" ? "black" : "white"
     opponents_pieces = gather_pieces(opponents_color)
 
     opponents_pieces.any? do |piece|
       piece.unchecked_valid_moves
-      is_checked?(piece,color)
+      puts_in_check?(piece,color)
     end
   end
 
-  def is_checked?(piece,kings_color)
+  def puts_in_check?(piece,kings_color)
     piece.unchecked_valid_moves.each do |position|
       y,x = position
       return true if @grid[y][x].class == King && @grid[y][x].color == kings_color
