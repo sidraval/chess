@@ -101,7 +101,7 @@ class King < SteppingPiece
   end
 
   def set_symbol
-    @symbol = @color == "white" ? "\u2654" : "\u265A"
+    @symbol = @color == :white ? "\u2654" : "\u265A"
   end
 
 end
@@ -114,7 +114,7 @@ class Queen < SlidingPiece
   end
 
   def set_symbol
-    @symbol = @color == "white" ? "\u2655" : "\u265B"
+    @symbol = @color == :white ? "\u2655" : "\u265B"
   end
 
 end
@@ -127,7 +127,7 @@ class Rook < SlidingPiece
   end
 
   def set_symbol
-    @symbol = @color == "white" ? "\u2656" : "\u265C"
+    @symbol = @color == :white ? "\u2656" : "\u265C"
   end
 
 end
@@ -139,7 +139,7 @@ class Knight < SteppingPiece
   end
 
   def set_symbol
-    @symbol = @color == "white" ? "\u2658" : "\u265E"
+    @symbol = @color == :white ? "\u2658" : "\u265E"
   end
 
 end
@@ -152,7 +152,7 @@ class Bishop < SlidingPiece
   end
 
   def set_symbol
-    @symbol = @color == "white" ? "\u2657" : "\u265D"
+    @symbol = @color == :white ? "\u2657" : "\u265D"
   end
 
 end
@@ -161,7 +161,7 @@ class Pawn < ChessPiece
   attr_accessor :has_moved
 
   def directions
-    if @color == "white"
+    if @color == :white
       [[-1,0],[-1,-1],[-1,1],[-2,0]]
     else
       [[1,0],[1,1],[1,-1],[2,0]]
@@ -205,6 +205,6 @@ class Pawn < ChessPiece
   end
 
   def set_symbol
-    @symbol = @color == "white" ? "\u2659" : "\u265F"
+    @symbol = @color == :white ? "\u2659" : "\u265F"
   end
 end

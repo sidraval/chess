@@ -8,7 +8,7 @@ class Board
 
   def instantiate_pieces
     2.times do |number|
-      color = number == 0 ? "black" : "white"
+      color = number == 0 ? :black : :white
       row = number * 7
 
       pieces = [Rook,Knight,Bishop,Queen,King,Bishop,Knight,Rook]
@@ -32,7 +32,7 @@ class Board
   end
 
   def is_in_check?(color)
-    opponents_color = color == "white" ? "black" : "white"
+    opponents_color = color == :white ? :black : :white
     opponents_pieces = gather_pieces(opponents_color)
 
     opponents_pieces.any? do |piece|

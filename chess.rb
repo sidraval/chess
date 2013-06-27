@@ -8,8 +8,8 @@ class Chess
 
   def initialize
     @board = Board.new
-    @player1 = Human.new("white")
-    @player2 = Human.new("black")
+    @player1 = Human.new(:white)
+    @player2 = Human.new(:black)
   end
 
   def play
