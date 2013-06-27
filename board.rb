@@ -3,10 +3,10 @@ class Board
 
   def initialize
     @grid = Array.new(8){Array.new(8)}
-    set_pieces
+    instantiate_pieces
   end
 
-  def set_pieces
+  def instantiate_pieces
     2.times do |number|
       color = number == 0 ? "black" : "white"
       row = number * 7
@@ -125,8 +125,8 @@ class Board
     pieces
   end
 
-  def kill_piece(old_piece)
-    old_piece.position = [-1000,-1000] unless old_piece.nil?
+  def kill_piece(piece)
+    piece.position = [-1000,-1000] unless piece.nil?
   end
 
   def get_piece(position)

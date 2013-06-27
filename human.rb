@@ -6,10 +6,12 @@ class Human
   end
 
   def move
-    print "coordinates of the piece you want to move: "
+    puts ""
+    print "Which piece would you like to move: "
     start = chess_to_array_notation(gets.chomp)
-    print "coordinates of where you want it to go: "
+    print "Where do you want it to go: "
     finish = chess_to_array_notation(gets.chomp)
+    puts ""
     [start,finish]
   end
 

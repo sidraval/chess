@@ -55,8 +55,6 @@ class Chess
     chosen_move
   end
 
-
-
   def game_over?
     @board.in_mate?(@player1.color) || @board.in_mate?(@player2.color)
   end
