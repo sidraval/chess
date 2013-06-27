@@ -22,6 +22,14 @@ class Board
       end
     end
   end
+  
+  def is_valid?(player,move)
+    start,finish = move
+    y,x = start
+    piece = @grid[y][x]
+    return false if piece.nil?
+    piece.valid_moves.include?(finish) && player.color == piece.color
+  end
 
   def is_in_check?(color)
     opponents_color = color == "white" ? "black" : "white"

@@ -38,30 +38,24 @@ class Chess
 
   def turn(player)
     puts "Check!" if @board.is_in_check?(player.color)
-    player_move = move(player)
-    @board.change_board(player_move)
+    chosen_move = move(player)
+    @board.change_board(chosen_move)
   end
 
   def move(player)
     begin
-      player_move = player.move
-      unless is_valid?(player,player_move)
+      chosen_move = player.move
+      unless @board.is_valid?(player,chosen_move)
         raise ArgumentError.new "Invalid move try again"
       end
     rescue ArgumentError => e
       puts "Error was: #{e.message}"
       retry
     end
-    player_move
+    chosen_move
   end
 
-  def is_valid?(player,move)
-    start,finish = move
-    y,x = start
-    piece = @board.grid[y][x]
-    return false if piece.nil?
-    piece.valid_moves.include?(finish) && player.color == piece.color
-  end
+
 
   def game_over?
     @board.in_mate?(@player1.color) || @board.in_mate?(@player2.color)
