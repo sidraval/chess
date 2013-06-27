@@ -20,15 +20,15 @@ class ChessPiece
 
   def position_state(position)
     y,x = position
-    return "Next direction" if !((0..7).include?(x) && (0..7).include?(y))
+    return :next if !((0..7).include?(x) && (0..7).include?(y))
 
     piece = @board.grid[y][x]
     if piece.nil?
-      return "Empty spot"
+      return :empty
     elsif piece.color == self.color
-      return "Next direction"
+      return :next
     else
-      return "Opponents piece"
+      return :opponent_piece
     end
   end
 
@@ -63,12 +63,12 @@ class SlidingPiece < ChessPiece
       until bad_direction
         new_position = add_arrays(new_position,direction)
         case position_state(new_position)
-        when "Next direction"
+        when :next
           bad_direction = true
-        when "Opponents piece"
+        when :opponent_piece
           moves << new_position
           bad_direction = true
-        when "Empty spot"
+        when :empty
           moves << new_position
         end
       end
@@ -86,7 +86,7 @@ class SteppingPiece < ChessPiece
     directions.each do |direction|
       new_position = @position
       new_position = add_arrays(new_position,direction)
-      moves << new_position if position_state(new_position) != "Next direction"
+      moves << new_position if position_state(new_position) != :next
     end
     moves
   end
@@ -193,14 +193,14 @@ class Pawn < ChessPiece
     directions[1...3].each do |direction|
       new_position = @position
       new_position = add_arrays(new_position,direction)
-      moves << new_position if position_state(new_position) == "Opponents piece"
+      moves << new_position if position_state(new_position) == :opponent_piece
     end
     moves
   end
 
   def add_forward_once
     new_position = add_arrays(@position,directions[0])
-    return [new_position] if position_state(new_position) == "Empty spot"
+    return [new_position] if position_state(new_position) == :empty
     []
   end
 
