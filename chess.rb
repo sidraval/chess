@@ -15,6 +15,7 @@ class Chess
   def play
     @board.display
 
+    # REV: This should be shorter
     until game_over?
       turn(@player1)
       break if game_over?
